@@ -1,7 +1,4 @@
 #lang racket/gui
-;Importa las definiciones de boardLogic
-(require "boardLogic.rkt")
-
 
 ;Define vector para el horizontal-panel
 (define vec-fila vector)
