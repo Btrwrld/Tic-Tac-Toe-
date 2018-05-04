@@ -1,5 +1,8 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-advanced-reader.ss" "lang")((modname boardLogic) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #t #t none #f () #f)))
 #lang racket/gui
-;Comparte todas las funciones con el Gui
+;;Comparte todas las funciones con el Gui
 (provide (all-defined-out))
 
 #| Genera la matriz de juego, una matriz de unos
@@ -85,3 +88,117 @@
         #f)
         )
   )
+
+#| Ejecuta el algoritmo para el turno del sistema
+
+   matrix: Matriz de juego.
+
+   Ej: (myTurn (list (list "X" "X" 1) (list 1 "O" 1) (list 1 1 1)))
+|#
+(define (myTurn matrix)
+  (cond ((not (null? (winningChances matrix (matX (car matrix)) (matY matrix) )))
+         (makeMove (car (winningMove matrix)) (cadr (winningMove matrix))) )
+    )
+  )
+
+#| Obtiene la longitud en x de la matriz
+
+   matrix: Matriz de juego.
+
+   Ej: (matX (list (list 1 1 1) (list 1 1 1) (list 1 1 1)))
+|#
+(define (matX matrix)
+  (cond ((null? matrix)
+         0)
+        (else
+         (+ 1 (matX (cdr matrix))))
+        )
+  )
+#| Obtiene la longitud en y de la matriz
+
+   matrix: Matriz de juego.
+
+   Ej: (matY (list (list 1 1 1) (list 1 1 1) (list 1 1 1)))
+|#
+(define (matY matrix)
+  (cond ((null? matrix)
+         0)
+        (else
+         (+ 1 (matY (cdr matrix))))
+        )
+  )
+
+
+#| Obtiene una lista con todas la posibilidades de ganar en el eje X, Y o en diagonal
+
+   matrix: Matriz de juego.
+
+   Ej: (matY (list (list 1 1 1) (list 1 1 1) (list 1 1 1)))
+|#
+(define (winningChances matrix user)
+  (cond ((not (null? (xRun matrix user 0 0)))
+         (xRun matrix user 0 0))
+
+        ((not (null? (yRun matrix user 0 0)))
+         (yRun matrix user 0 0))
+
+        ((not (null? (dRun matrix user 0 0)))
+         (dRun matrix user 0 0))
+
+        (else '())
+        )
+  )
+
+
+#| Obtiene una lista con todas la posibilidades de ganar en el eje X
+   esto mediante un barrido horizontal de la matriz
+
+   matrix: Matriz de juego.
+   user: Usuario del que se buscan las posibilidades de ganar
+   x: Posición inicial en el eje x
+   y: Posición inicial en el eje y
+
+   Ej: (xRun (list (list "O" "O" 1) (list 1 1 1) (list 1 1 1)) x y) 
+|#
+(define (xRun matrix user x y)
+  (cond ((null? matrix) '())
+
+        ()
+        )
+  )
+
+#| Obtiene una lista con todas la posibilidades de ganar en el eje y
+   esto mediante un barrido vertical de la matrix
+
+   matrix: Matriz de juego.
+   user: Usuario del que se buscan las posibilidades de ganar
+   x: Posición inicial en el eje x
+   y: Posición inicial en el eje y
+
+   Ej: (xRun (list (list "O" 1 1) (list "O" 1 1) (list 1 1 1)) x y) 
+|#
+(define (yRun matrix user x y)
+  (cond ((null? matrix) '())
+
+        ()
+        )
+  )
+
+#| Obtiene una lista con todas la posibilidades de ganar en el eje diagonal
+   esto mediante un barrido diagonal de la matriz
+
+   matrix: Matriz de juego.
+   user: Usuario del que se buscan las posibilidades de ganar
+   x: Posición inicial en el eje x
+   y: Posición inicial en el eje y
+
+   Ej: (xRun (list (list "O" "O" 1) (list 1 "O" 1) (list 1 1 1)) x y) 
+|#
+(define (dRun matrix user x y)
+  (cond ((null? matrix) '())
+
+        ()
+        )
+  )
+
+
