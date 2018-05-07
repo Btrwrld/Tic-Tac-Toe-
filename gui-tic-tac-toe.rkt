@@ -15,6 +15,10 @@
   (set! matriz-juego (makeMove index1 index2 "X" matriz-juego))
   (printf "button ~a ~b clicked~%" index1 index2))
 
+;Funcion utilizada para que se observe el movimiento de la computadora en el GUI
+(define (plot-pc index1 index2 vect)
+  (send (vector-ref (vector-ref vect index2) index1) set-label "O"))
+
 ;Crear una ventana
 (define toplevel (new frame% [label "Gui-Tic-Tac-Toe"]))
 
@@ -43,11 +47,11 @@
 
 ;Funcion de validacion (filas > 1 y columnas > 2)
 (define (validacion n1 n2)
-  (cond ((and (> n1 2) (> n2 1)) #t)
+  (cond ((and (>= n1 3) (>= n2 3) (<= n1 10) (<= n2 10)) #t)
         (else #f)))
   
 ;Funcion llamada para dibujar la matriz
-(define (draw columnas filas)
+(define (TTT columnas filas)
   (cond ((equal? #t (validacion columnas filas)) (buttons columnas filas) (send toplevel show #t) (set! matriz-juego (genMatrix filas columnas '())))
         (else
          "Debe introducir valores validos para la matriz")))
