@@ -86,19 +86,6 @@
         )
   )
 
-#|
-#| Ejecuta el algoritmo para el turno del sistema
-
-   matrix: Matriz de juego.
-
-   Ej: (myTurn (list (list "X" "X" 1) (list 1 "O" 1) (list 1 1 1)))
-|#
-(define (myTurn matrix)
-  (cond ((not (null? (winningChances matrix (matX (car matrix)) (matY matrix) )))
-         (makeMove (car (winningMove matrix)) (cadr (winningMove matrix))) )
-    )
-  )
-
 #| Obtiene la longitud en x de la matriz
 
    matrix: Matriz de juego.
@@ -109,7 +96,15 @@
   (cond ((null? matrix)
          0)
         (else
-         (+ 1 (matX (cdr matrix))))
+          (matXAux (car matrix)))
+        )
+  )
+(define (matXAux matrix)
+  (cond ((null? matrix)
+         0)
+        (else
+         (+ 1 (matXAux (cdr matrix)))
+         )
         )
   )
 #| Obtiene la longitud en y de la matriz
@@ -126,77 +121,407 @@
         )
   )
 
+#| Regresa el valor de la menor dimensión de la matriz x o y
 
-#| Obtiene una lista con todas la posibilidades de ganar en el eje X, Y o en diagonal
+   matrix: La matriz del juego
 
-   matrix: Matriz de juego.
-
-   Ej: (matY (list (list 1 1 1) (list 1 1 1) (list 1 1 1)))
 |#
-(define (winningChances matrix user)
-  (cond ((not (null? (xRun matrix user 0 0)))
-         (xRun matrix user 0 0))
-
-        ((not (null? (yRun matrix user 0 0)))
-         (yRun matrix user 0 0))
-
-        ((not (null? (dRun matrix user 0 0)))
-         (dRun matrix user 0 0))
-
-        (else '())
-        )
+(define (minMat matrix)
+  (cond ((> (matX matrix) (matY matrix))
+         (matY matrix))
+        
+        ((<= (matX matrix) (matY matrix))
+         (matX matrix))
+   )
   )
 
 
-#| Obtiene una lista con todas la posibilidades de ganar en el eje X
-   esto mediante un barrido horizontal de la matriz
+
+#| Ejecuta el algoritmo para el turno del sistema
 
    matrix: Matriz de juego.
-   user: Usuario del que se buscan las posibilidades de ganar
-   x: Posición inicial en el eje x
-   y: Posición inicial en el eje y
 
-   Ej: (xRun (list (list "O" "O" 1) (list 1 1 1) (list 1 1 1)) x y) 
+   Ej: (myTurn (list (list "X" "X" 1) (list 1 "O" 1) (list 1 1 1)))
 |#
-(define (xRun matrix user x y)
-  (cond ((null? matrix) '())
+(define (myTurn matrix)
+  (cond ((equal? (spacesToWin matrix "O") 1)
+          (play matrix "O" 1))
 
-        ()
+        ((equal? (spacesToWin matrix "X") 1)
+          (play matrix "X" 1))
+
+        (else
+         (play matrix "O" (spacesToWin matrix "O")))
+    ) 
+  )
+
+
+
+
+
+
+(define (play matrix player toWin)
+   (cond ((equal? (bestSolution matrix player) "rows")
+         (winRow matrix player toWin 0))
+
+         ((equal? (bestSolution matrix player) "columns")
+         (winColumn matrix player toWin))
+
+          ((equal? (bestSolution matrix player) "right_diagonal")
+         (winRightDiagonal matrix player toWin 0 0))
+         
+         ((equal? (bestSolution matrix player) "left_diagonal")
+         (winLeftDiagonal matrix player toWin 0 0))
+      ) 
+  )
+
+#| Obtiene la posición para ganar la fila
+
+   matrix: Matriz de juego.
+   player: juagor a evaluar
+   y: numero de columna inicial
+
+   Ej: (winRow (list (list "X" "X" 1) (list 1 "X" 1) (list 1 1 1)) "X" 0)
+|#
+(define (winRow matrix player toWin y)
+  (cond ((equal? toWin (checkRow (car matrix) player))
+         (list (winRowAux (car matrix) player 0) y))
+
+        (else
+         (winRow (cdr matrix) player toWin (+ 1 y)))
+    )
+  )
+(define (winRowAux matrix player x)
+  (cond ((equal? 1 matrix)
+         x)
+
+        ((equal? 1 (car matrix))
+         x)
+
+        (else
+         (winRowAux (cdr matrix) player (+ 1 x)))
+    )
+  )
+
+
+
+#| Obtiene la posición para ganar la columna
+
+   matrix: Matriz de juego.
+   player: juagor a evaluar
+
+   Ej: (winColumn (list (list "X" "X" 1) (list "X" 1 1) (list 1 1 1)) "X")
+|#
+(define (winColumn matrix player toWin)
+  (list (cadr (winRow (transpose matrix) player toWin 0))  (car (winRow (transpose matrix) player toWin 0)))
+  )
+
+
+#| Obtiene la posición para ganar la diagonal derecha
+
+   matrix: Matriz de juego.
+   player: juagor a evaluar
+   x : Posicion inicial en x
+   y : Posicion inicial en y
+
+   Ej: (winRightDiagonal (list (list "X" "X" 1) (list 1 "X" 1) (list 1 1 1)) "X" 0 0)
+|#
+(define (winRightDiagonal matrix player toWin x y)
+  (cond ((equal? toWin (toWinDiagonalAux matrix player))
+         (winDiagonalAux matrix player x y))
+        
+        (else
+         (winRightDiagonal (cdr matrix) player x (+ 1 y)))
+    )
+  )
+(define (winDiagonalAux matrix player x y)
+  (cond ((equal? 1 (caar matrix))
+         (list x y))
+        
+        (else
+         (winDiagonalAux (cdr(remove_column matrix)) player (+ 1 x) (+ 1 y)))
+    )
+  )
+
+
+#| Obtiene la posición para ganar la diagonal izq
+
+   matrix: Matriz de juego.
+   player: juagor a evaluar
+   x : Posicion inicial en x
+   y : Posicion inicial en y
+
+   Ej: (winLeftDiagonal (list (list 1 1 "X") (list 1 "X" 1) (list 1 1 1)) "X" 0 0)
+|#
+(define (winLeftDiagonal matrix player toWin x y)
+  (list (car (winRightDiagonal (invert matrix) player toWin x y)) (+ (cadr (winRightDiagonal (invert matrix) player toWin x y)) (- (matY matrix) 1)))
+  )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#| Retorna el mínimo número de movimientos para ganar
+
+   matrix: La matriz del juego
+   player: El elemento a comparar
+
+   Ej: (spacesToWin (list (list "X" "X" 1) (list 1 "O" 1) (list 1 1 1)) "X")
+|#
+
+(define (spacesToWin matrix player)
+  (cond ((equal? (bestSolution matrix player) "rows")
+         (toWinRow matrix player (matX matrix)))
+
+         ((equal? (bestSolution matrix player) "columns")
+         (toWinColumn matrix player (matY matrix)))
+
+          ((equal? (bestSolution matrix player) "right_diagonal")
+         (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix)))
+         
+         ((equal? (bestSolution matrix player) "left_diagonal")
+         (toWinLeftDiagonal matrix player))
+      ) 
+  )
+
+#| Elige al mejor candidato para la solucion, puede ser una fila, columna o diagonal
+   Funcion de seleccion 
+
+   matrix: La matriz del juego
+   player El jugador
+  
+|#
+(define (bestSolution matrix player)
+  (cond ((and (<= (toWinRow matrix player (matX matrix)) (toWinColumn matrix player (matY matrix)))
+              (<= (toWinRow matrix player (matX matrix)) (toWinLeftDiagonal matrix player))
+              (<= (toWinRow matrix player (matX matrix)) (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix))))
+         "rows")
+
+         ((and (<= (toWinColumn matrix player (matY matrix)) (toWinRow matrix player (matX matrix)))
+               (<= (toWinColumn matrix player (matY matrix)) (toWinLeftDiagonal matrix player))
+               (<= (toWinColumn matrix player (matY matrix)) (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix))))
+         "columns")
+
+          ((and (<= (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix)) (toWinRow matrix player (matX matrix)))
+                (<= (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix)) (toWinColumn matrix player (matY matrix)))
+                (<= (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix)) (toWinLeftDiagonal matrix player)))
+         "right_diagonal")
+         
+         ((and (<= (toWinLeftDiagonal matrix player) (toWinRow matrix player (matX matrix)))
+               (<= (toWinLeftDiagonal matrix player) (toWinColumn matrix player (matY matrix)))
+               (<= (toWinLeftDiagonal matrix player) (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix))))
+          "left_diagonal")
+
+         ;;((equal? (toWinRow matrix player (matX matrix)) (toWinColumn matrix player (matY matrix)) (toWinLeftDiagonal matrix player)
+               ;;   (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix)) )
+          ;;"tie")
+      ) 
+  )
+
+
+#| La cantidad de pasos que hacen falta para ganar la fila
+   Funcion de viabilidad
+
+   matrix: La matriz del juego
+   player El jugador
+   num: numero minimo de movimientos para gana la fila
+|#
+
+(define (toWinRow matrix player num)
+  (cond ((null? matrix)
+        num)
+        
+        ((> num (checkRow (car matrix) player))
+         (toWinRow (cdr matrix) player (checkRow (car matrix) player)))
+        
+        (else
+         (toWinRow (cdr matrix) player num))
         )
   )
 
-#| Obtiene una lista con todas la posibilidades de ganar en el eje y
-   esto mediante un barrido vertical de la matrix
+#| Cuenta la cantidad de espacios necesarios para ganar la lista
 
-   matrix: Matriz de juego.
-   user: Usuario del que se buscan las posibilidades de ganar
-   x: Posición inicial en el eje x
-   y: Posición inicial en el eje y
-
-   Ej: (xRun (list (list "O" 1 1) (list "O" 1 1) (list 1 1 1)) x y) 
+   lista: Lista de valores a comparar
+   player El elemento a comparar
 |#
-(define (yRun matrix user x y)
-  (cond ((null? matrix) '())
 
-        ()
+(define (checkRow lista player)
+  (cond ((null? lista)
+         0)
+        
+       ((equal? (car lista) player)
+        (checkRow (cdr lista) player))
+
+        ((not (equal? (car lista) 1))
+        11)
+       
+       (else
+        (+ 1 (checkRow (cdr lista) player)))
+       )
+  )
+
+
+
+#| La cantidad de pasos que hacen falta para ganar la columna
+   Funcion de viabilidad
+
+   matrix: La matriz del juego
+   player El elemento a comparar
+   num: numero minimo de movimientos para gana la columna
+|#
+
+(define (toWinColumn matrix player num)
+  (toWinRow (transpose matrix) player num))
+
+
+
+#| Cuanta la cantidad de movimientos para ganar una diagonal si ya hay una marca del
+   oponente suma 11 para que no se tome en cuenta
+
+   matrix: La matriz del juego
+   player: El elemento a comparar
+|#
+
+(define (toWinDiagonalAux matrix player)
+  (cond ((or (null? matrix) (null? (car matrix)))
+        0)
+
+       ((and (equal? (caar matrix) player) (not(null? (cdar matrix))) (null? (cdr matrix)) )
+        0)
+       
+       ((and (not(equal? (caar matrix) player)) (not(null? (cdar matrix))) (null? (cdr matrix)) )
+        1)
+       
+       ((equal? (caar matrix) player)
+        (toWinDiagonalAux (cdr(remove_column matrix)) player))
+
+       ((equal? (caar matrix) 1)
+        (+ 1 (toWinDiagonalAux (cdr(remove_column matrix)) player)))
+
+       ((not (equal? (caar matrix) 1))
+        11)
+       
+       (else
+        0)
+       
+       )
+  )
+
+#| Obtiene el menor numero de movimientos necesarios para ganr la diagonal izq
+   Funcion de viabilidad
+
+   matrix: La matriz del juego
+   player: El elemento a comparar
+   num: numero minimo de movimientos para ganar la diagonal
+|#
+
+(define (toWinRightDiagonal matrix player num lim)
+  (cond ((null? matrix)
+         num)
+        
+        ((and (> num (toWinDiagonalAux matrix player)) (<= lim (minMat matrix)))
+         (toWinRightDiagonal (cdr matrix) player (toWinDiagonalAux matrix player) lim))
+        
+        ((<= lim (minMat matrix))
+         (toWinRightDiagonal (cdr matrix) player num lim))
+
+        (else
+         num)
+
         )
   )
 
-#| Obtiene una lista con todas la posibilidades de ganar en el eje diagonal
-   esto mediante un barrido diagonal de la matriz
+#| Obtiene el menor numero de movimientos necesarios para ganr la diagonal izq
+   Funcion de viabilidad
 
-   matrix: Matriz de juego.
-   user: Usuario del que se buscan las posibilidades de ganar
-   x: Posición inicial en el eje x
-   y: Posición inicial en el eje y
+   matrix: La matriz del juego
+   player: El elemento a comparar
+   num: numero minimo de movimientos para gana la diagonal
 
-   Ej: (xRun (list (list "O" "O" 1) (list 1 "O" 1) (list 1 1 1)) x y) 
 |#
-(define (dRun matrix user x y)
-  (cond ((null? matrix) '())
+(define (toWinLeftDiagonal matrix player)
+  (toWinRightDiagonal (invert matrix) player (minMat matrix) (minMat matrix)))
 
-        ()
-        )
+
+
+
+
+
+
+
+#| Si lo que se le pasa es una lista, la función la invierte y si es una matriz lo que hace es
+   invertir la diagonal
+
+   lista:Puede ser una lista ó una matriz 
+
+   Ejemplo: Matriz sin aplicar la función:  (4 5 6)  aplicando la función: (7 8 9)
+                                            (1 2 3)                        (1 2 3)
+                                            (7 8 9)                        (4 5 6)
+                                           
+|#
+
+(define (invert lista )
+  (cond((null? lista) '())
+       (else( append (invert (cdr lista))  (list(car lista)) ))))
+
+
+#| Traspone la matriz
+
+   matrix: La matriz del juego
+|#
+
+(define (transpose matrix)
+  (cond((null? matrix) '())
+       ((null? (car matrix)) '())
+       (else( cons (get_column matrix) (transpose (remove_column matrix))))))
+
+#| Remueve la primera columna de una matriz dada
+
+   matrix: La matriz del juego
+|#
+
+(define (remove_column matrix)
+  (cond((null? matrix) '())
+       (else(cons (cdar matrix) (remove_column (cdr matrix))))
+       )
   )
+
+#| Retorna solo la primera columna
+
+   matrix: La matriz del juego
 |#
 
+(define (get_column matrix)
+  (cond((null? matrix) '())
+       (else(cons (caar matrix) (get_column (cdr matrix))))))
+
+
+;;(diagonal_1 (list (list 1 1 1) (list "X" 1 1) (list 1 "X" 1) (list 1 1 1)) "X" (minMat (list (list 1 1 1) (list "X" 1 1) (list 1 "X" 1) (list 1 1 1))) (minMat (list (list 1 1 1) (list "X" 1 1) (list 1 "X" 1) (list 1 1 1))))
+  
