@@ -262,7 +262,7 @@
          (winDiagonalAux matrix player x y))
         
         (else
-         (winRightDiagonal (cdr matrix) player x (+ 1 y)))
+         (winRightDiagonal (cdr matrix) player toWin x (+ 1 y)))
     )
   )
 (define (winDiagonalAux matrix player x y)
