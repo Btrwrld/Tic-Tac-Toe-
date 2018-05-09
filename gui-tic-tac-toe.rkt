@@ -44,7 +44,7 @@
 ;Setear valores a los vectores
 (define (set-vals cols fils)
   (set! vec-fila (new-panel fils))
-  (set! vec-boton (buttons-gen cols fils )))
+  (set! vec-boton (buttons-gen fils cols)))
   
  ;Funcion Para dibujar los botones
 (define (buttons-gen columnas filas)
@@ -67,7 +67,7 @@
   
 ;Funcion llamada para dibujar la matriz
 (define (TTT columnas filas)
-  (cond ((equal? #t (validacion columnas filas)) (set-vals columnas filas) (send toplevel show #t) (set! matriz-juego (genMatrix filas columnas '())))
+  (cond ((equal? #t (validacion columnas filas)) (set-vals columnas filas) (send toplevel show #t) (set! matriz-juego (genMatrix columnas filas '())))
         (else
          "Debe introducir valores validos para la matriz")))
 
