@@ -254,7 +254,7 @@
    Ej: (winLeftDiagonal (list (list 1 1 "X") (list 1 "X" 1) (list 1 1 1)) "X" 0 0)
 |#
 (define (winLeftDiagonal matrix player toWin x y)
-  (list (car (winRightDiagonal (invert matrix) player toWin x y)) (+ (cadr (winRightDiagonal (invert matrix) player toWin x y)) (- (matY matrix) 1)))
+  (list (car (winRightDiagonal (invert matrix) player toWin x y)) (- (- (matY matrix) 1) (cadr (winRightDiagonal (invert matrix) player toWin x y))))
   )
 
 
