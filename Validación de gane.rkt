@@ -18,7 +18,8 @@
 
 (define (win? matrix num)
   (or (rows matrix num) (columns matrix num)
-       (diagonal_1 matrix num) (diagonal_2 matrix num)))
+      (diagonal_todas matrix num)))
+       
 
 #| Traspone la matriz
 
@@ -126,3 +127,16 @@
 |#
 (define (diagonal_2 matrix num)
   (diagonal_1 (invert matrix) num))
+  
+ #| Valida todas las diagonales
+
+   matrix: La matriz del juego
+   num: El elemento a comparar
+|#
+
+(define (diagonal_todas matrix num)
+  (or (diagonal_1 matrix num) (diagonal_2 matrix num)
+      (diagonal_1 (transpose matrix) num) (diagonal_2 (transpose matrix) num)))
+ 
+ 
+ 
