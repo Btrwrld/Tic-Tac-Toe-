@@ -144,14 +144,14 @@
    Ej: (myTurn (list (list "X" "X" 1) (list 1 "O" 1) (list 1 1 1)))
 |#
 (define (myTurn matrix)
-  (cond ((equal? (spacesToWin matrix "O") 1)
-          (play matrix "O" 1))
-
-        ((equal? (spacesToWin matrix "X") 1)
+  (cond ((equal? (spacesToWin matrix "X") 1)
           (play matrix "X" 1))
 
+        ((equal? (spacesToWin matrix "O") 1)
+          (play matrix "O" 1))
+
         (else
-         (play matrix "O" (spacesToWin matrix "O")))
+         (play matrix "X" (spacesToWin matrix "X")))
     ) 
   )
 
@@ -172,8 +172,39 @@
          
          ((equal? (bestSolution matrix player) "left_diagonal")
          (winLeftDiagonal matrix player toWin 0 0))
+
+         ((equal? (bestSolution matrix player) "tie")
+         (freePick matrix))
       ) 
   )
+
+#|Marca el primer elemento que encuentre disponible
+
+   matrix: Matriz de juego.
+   player: juagor a evaluar
+
+   Ej: (winRow (list (list "X" "X" 1) (list 1 "X" 1) (list 1 1 1)) "X" 0)
+|#
+(define (freePick matrix y)
+ (cond  ((equal? -1 (freePickAux (car matrix) 0))
+         (freePick (cdr matrix) (+ 1 y)))
+        
+        (else
+         (list (freePickAux (car matrix) 0) y))
+        )
+  )
+(define (freePickAux row x)
+ (cond ((null? row)
+        -1)
+   
+        ((equal? 1 (car row))
+         x)
+        
+        (else
+         (freePickAux (cdr row) (+ 1 x)))
+        )
+  )
+
 
 #| Obtiene la posición para ganar la fila
 
@@ -260,34 +291,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #| Retorna el mínimo número de movimientos para ganar
 
    matrix: La matriz del juego
@@ -321,29 +324,86 @@
 (define (bestSolution matrix player)
   (cond ((and (<= (toWinRow matrix player (matX matrix)) (toWinColumn matrix player (matY matrix)))
               (<= (toWinRow matrix player (matX matrix)) (toWinLeftDiagonal matrix player))
-              (<= (toWinRow matrix player (matX matrix)) (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix))))
+              (<= (toWinRow matrix player (matX matrix)) (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix)))
+              (viableRows? matrix player))
          "rows")
 
          ((and (<= (toWinColumn matrix player (matY matrix)) (toWinRow matrix player (matX matrix)))
                (<= (toWinColumn matrix player (matY matrix)) (toWinLeftDiagonal matrix player))
-               (<= (toWinColumn matrix player (matY matrix)) (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix))))
+               (<= (toWinColumn matrix player (matY matrix)) (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix)))
+               (viableColumns? matrix player))
          "columns")
 
           ((and (<= (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix)) (toWinRow matrix player (matX matrix)))
                 (<= (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix)) (toWinColumn matrix player (matY matrix)))
-                (<= (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix)) (toWinLeftDiagonal matrix player)))
+                (<= (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix)) (toWinLeftDiagonal matrix player))
+                (viableRDiagonal? matrix player))
          "right_diagonal")
          
          ((and (<= (toWinLeftDiagonal matrix player) (toWinRow matrix player (matX matrix)))
                (<= (toWinLeftDiagonal matrix player) (toWinColumn matrix player (matY matrix)))
-               (<= (toWinLeftDiagonal matrix player) (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix))))
+               (<= (toWinLeftDiagonal matrix player) (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix)))
+               (viableLDiagonal? matrix player))
           "left_diagonal")
 
-         ;;((equal? (toWinRow matrix player (matX matrix)) (toWinColumn matrix player (matY matrix)) (toWinLeftDiagonal matrix player)
-               ;;   (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix)) )
-          ;;"tie")
+        (else
+         "tie")
       ) 
   )
+
+#| Determina si es posible ganar alguna fila
+
+   matrix: La matriz del juego
+   player El jugador
+|#
+(define (viableRows? matrix player)
+  (cond ((null? matrix)
+        #f)
+        
+        ((<= 11 (checkRow (car matrix) player))
+         (viableRows? (cdr matrix) player))
+        
+        (else
+         #t)
+        )
+  )
+#| Determina si es posible ganar alguna columna
+
+   matrix: La matriz del juego
+   player El jugador
+|#
+(define (viableColumns? matrix player)
+  (viableRows? (transpose matrix) player)
+  )
+#| Determina si es posible ganar alguna diagonal derecha
+
+   matrix: La matriz del juego
+   player El jugador
+|#
+(define (viableRDiagonal? matrix player)
+  (cond ((null? matrix)
+         #f)
+        
+        ((<= 11 (toWinDiagonalAux matrix player))
+         (viableRDiagonal? (cdr matrix) player))
+
+        (else
+         #t)
+        )
+  )
+
+  #| Determina si es posible ganar alguna diagonal izquierda
+
+   matrix: La matriz del juego
+   player El jugador
+|#
+(define (viableLDiagonal? matrix player)
+  (viableRDiagonal? (invert matrix) player)
+  )
+
+
+
+
 
 
 #| La cantidad de pasos que hacen falta para ganar la fila
@@ -398,7 +458,8 @@
 |#
 
 (define (toWinColumn matrix player num)
-  (toWinRow (transpose matrix) player num))
+  (toWinRow (transpose matrix) player num)
+  )
 
 
 
@@ -467,7 +528,8 @@
 
 |#
 (define (toWinLeftDiagonal matrix player)
-  (toWinRightDiagonal (invert matrix) player (minMat matrix) (minMat matrix)))
+  (toWinRightDiagonal (invert matrix) player (minMat matrix) (minMat matrix))
+  )
 
 
 
@@ -523,5 +585,13 @@
        (else(cons (caar matrix) (get_column (cdr matrix))))))
 
 
+
+
+;; Pruebas para hacerlo caer 1m1
+
+  ;;(list (list "X" "O" 1 1 "X") (list "O" "O" 1 1 "X") (list "O" "O" 1 1 "X") (list 1 "X" 1 1 "O") (list "X" 1 1 1 "X")) "O"
+
+
+  
 ;;(diagonal_1 (list (list 1 1 1) (list "X" 1 1) (list 1 "X" 1) (list 1 1 1)) "X" (minMat (list (list 1 1 1) (list "X" 1 1) (list 1 "X" 1) (list 1 1 1))) (minMat (list (list 1 1 1) (list "X" 1 1) (list 1 "X" 1) (list 1 1 1))))
   
