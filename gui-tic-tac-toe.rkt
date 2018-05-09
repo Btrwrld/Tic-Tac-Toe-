@@ -19,7 +19,7 @@
   (printf "button ~a ~a clicked~%" index1 index2)
   (send button enable #f)
   (send button set-label "O")
-  (set! matriz-juego (makeMove index1 index2 "O" matriz-juego))
+  (set! matriz-juego (makeMove index2 index1 "O" matriz-juego))
   (plot-pc (myTurn matriz-juego) vec-boton))
 
 ;Funcion utilizada para que se observe el movimiento de la computadora en el GUI
