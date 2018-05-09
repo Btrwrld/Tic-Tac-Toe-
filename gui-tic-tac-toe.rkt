@@ -16,17 +16,24 @@
 
 ;click-listener del boton
 (define (on-button-click button index1 index2 event)
-  (printf "button ~a ~a clicked~%" index1 index2)
-  (send button enable #f)
-  (send button set-label "O")
-  (set! matriz-juego (makeMove index2 index1 "O" matriz-juego))
-  (plot-pc (myTurn matriz-juego) vec-boton))
+  (cond ((equal? (win? matriz-juego "X") #f)
+        (send button enable #f)
+        (send button set-label "O")
+        (send button set-color "black")
+        (set! matriz-juego (makeMove index2 index1 "O" matriz-juego))
+        (plot-pc (myTurn matriz-juego) vec-boton))
+        (else
+         (printf "YA HAY UN GANADOR"))))
 
 ;Funcion utilizada para que se observe el movimiento de la computadora en el GUI
 (define (plot-pc list-index vect)
-  (send (vector-ref (vector-ref vect (cadr list-index)) (car list-index)) set-label "X")
-  (set! matriz-juego (makeMove (car list-index) (cadr list-index) "X" matriz-juego))
-  (send (vector-ref (vector-ref vect (cadr list-index)) (car list-index)) enable #f))
+  (cond ((equal? (win? matriz-juego "O") #f)
+         (send (vector-ref (vector-ref vect (cadr list-index)) (car list-index)) set-label "X")
+         (send (vector-ref (vector-ref vect (cadr list-index)) (car list-index)) set-color "black")
+         (set! matriz-juego (makeMove (car list-index) (cadr list-index) "X" matriz-juego))
+         (send (vector-ref (vector-ref vect (cadr list-index)) (car list-index)) enable #f))
+        (else
+         (printf "YA HAY UN GANADOR"))))
   
 
 ;Crear un panel horizontal para cada fila
@@ -43,7 +50,7 @@
 (define (buttons-gen columnas filas)
   (for/vector ([i(in-range columnas)])
     (for/vector ([j(in-range filas)])
-      (new button%
+      (new colorable-button%
            [parent (vector-ref vec-fila i)]
            [label ""]
            [min-width 90]
@@ -69,3 +76,35 @@
   (cond ((zero? n) n)
         (else
       (+ (modulo n 10) (* 2 (bin-dec (quotient n 10)))))))
+
+;Funciones para cambiar de color el label del boton
+(define text-size-dc
+  (new bitmap-dc% [bitmap (make-object bitmap% 1 1)]))
+
+(define colorable-button%
+  (class button%
+    (init [(internal-label label)]
+          [(initial-color color) "black"]
+          [(internal-font font) normal-control-font])
+    (define label internal-label)
+    (define font internal-font)
+    (super-new [label (make-label label font initial-color)]
+               [font font])
+    (define/override (set-label l)
+      (set! label l)
+      (super set-label l))
+    (define/private (make-label label font color)
+      (cond
+        [(string? label)
+         (match-define-values (w h _ _)
+           (send text-size-dc get-text-extent label font))
+         (define new-label (make-object bitmap% (exact-ceiling 90) (exact-ceiling 90)))
+         (define dc (new bitmap-dc% [bitmap new-label]))
+         (send dc set-font font)
+         (send dc set-text-foreground color)
+         (send dc draw-text label 17 5)
+         new-label]
+        [else label]))
+    (define/public (set-color c)
+      (define new-label (make-label label font c))
+      (super set-label new-label))))

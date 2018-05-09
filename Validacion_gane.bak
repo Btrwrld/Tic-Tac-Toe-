@@ -1,8 +1,8 @@
-#lang racket/gui
-;;Comparte todas las funciones con el Gui
-(provide (all-defined-out))
-
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-advanced-reader.ss" "lang")((modname |Validación de gane|) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #t #t none #f () #f)))
 #| Retorna quien ganó ("X" ó "O")
+
    matrix: La matriz del juego
 |#
 (define (who_win? matrix)
