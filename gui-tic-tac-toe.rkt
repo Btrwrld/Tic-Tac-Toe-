@@ -21,7 +21,7 @@
         (send button set-label "O")
         (send button set-color "black")
         (set! matriz-juego (makeMove index2 index1 "O" matriz-juego))
-        (plot-pc (myTurn matriz-juego) vec-boton))
+        (plot-aux matriz-juego vec-boton))
         (else
          (printf "YA HAY UN GANADOR"))))
 
@@ -34,6 +34,18 @@
          (send (vector-ref (vector-ref vect (cadr list-index)) (car list-index)) enable #f))
         (else
          (printf "YA HAY UN GANADOR"))))
+
+(define (plot-aux matriz vector)
+  (cond ((equal? (miembro matriz 1) #f))
+  (else
+   (plot-pc (myTurn matriz) vector) '())))
+
+;Funcion para determinar si un elemento pertenece a una matriz
+(define (miembro matriz ele)
+  (cond ((null? matriz) #f)
+        ((equal? ele (caar matriz)) #t)
+        (else
+         (miembro (cdr matriz) ele))))
   
 
 ;Crear un panel horizontal para cada fila

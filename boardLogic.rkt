@@ -557,20 +557,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #| Remueve la primera columna de una matriz dada
 
    matrix: La matriz del juego
