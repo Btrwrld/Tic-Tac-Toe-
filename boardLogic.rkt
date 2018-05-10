@@ -357,6 +357,7 @@
   )
 
 #| Determina si es posible ganar alguna fila
+Funcion de viabilidad.
 
    matrix: La matriz del juego
    player El jugador
@@ -373,6 +374,7 @@
         )
   )
 #| Determina si es posible ganar alguna columna
+Funcion de viabilidad.
 
    matrix: La matriz del juego
    player El jugador
@@ -380,7 +382,8 @@
 (define (viableColumns? matrix player)
   (viableRows? (transpose matrix) player)
   )
-#| Determina si es posible ganar alguna diagonal derecha
+#| Determina si es posible ganar alguna diagonal
+Funcion de viabilidad.
 
    matrix: La matriz del juego
    player El jugador
@@ -416,7 +419,7 @@
 
 
 #| La cantidad de pasos que hacen falta para ganar la fila
-   Funcion de viabilidad
+Funcion objetivo
 
    matrix: La matriz del juego
    player El jugador
@@ -459,7 +462,7 @@
 
 
 #| La cantidad de pasos que hacen falta para ganar la columna
-   Funcion de viabilidad
+   Funcion objetivo
 
    matrix: La matriz del juego
    player El elemento a comparar
@@ -529,7 +532,7 @@
   )
 
 #| Obtiene el menor numero de movimientos necesarios para ganr la diagonal izq
-   Funcion de viabilidad
+   Funcion objetivo
 
    matrix: La matriz del juego
    player: El elemento a comparar
@@ -542,7 +545,7 @@
 
 
 #| Obtiene el menor numero de movimientos necesarios para ganar cualquier diagonal 
-   Funcion de viabilidad
+   Funcion objetivo
 
    matrix: La matriz del juego
    player: El elemento a comparar
