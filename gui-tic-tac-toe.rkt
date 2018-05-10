@@ -43,9 +43,16 @@
 ;Funcion para determinar si un elemento pertenece a una matriz
 (define (miembro matriz ele)
   (cond ((null? matriz) #f)
-        ((equal? ele (caar matriz)) #t)
+        ((equal? (miembro-aux (car matriz) ele) #t) #t)
         (else
          (miembro (cdr matriz) ele))))
+
+  
+(define (miembro-aux matriz ele)
+  (cond ((null? matriz) #f)
+        ((equal? ele (car matriz)) #t)
+        (else
+         (miembro-aux (cdr matriz) ele))))
   
 
 ;Crear un panel horizontal para cada fila
