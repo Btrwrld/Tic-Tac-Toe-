@@ -11,8 +11,11 @@
 ;Define una lista para guardar la matriz del juego
 (define matriz-juego list)
 
-;Crear una ventana
+;Crear una ventana para el juego
 (define toplevel (new frame% [label "Gui-Tic-Tac-Toe"]))
+
+;Hacer una ventana para el mensaje de hay ganador
+(define frame (new frame% [label "Ganador"]))
 
 ;click-listener del boton
 (define (on-button-click button index1 index2 event)
@@ -21,24 +24,39 @@
         (send button set-label "O")
         (send button set-color "black")
         (set! matriz-juego (makeMove index2 index1 "O" matriz-juego))
-        (plot-aux matriz-juego vec-boton))
+        (plot-aux matriz-juego vec-boton)
+        (mensaje "El jugador X es el ganador" "X"))
+        
         (else
+         (mensaje "El jugador X es el ganador" "X")
          (printf "YA HAY UN GANADOR"))))
 
 ;Funcion utilizada para que se observe el movimiento de la computadora en el GUI
 (define (plot-pc list-index vect)
   (cond ((equal? (win? matriz-juego "O") #f)
          (send (vector-ref (vector-ref vect (cadr list-index)) (car list-index)) set-label "X")
-         (send (vector-ref (vector-ref vect (cadr list-index)) (car list-index)) set-color "black")
+         (send (vector-ref (vector-ref vect (cadr list-index)) (car list-index)) set-color "red")
          (set! matriz-juego (makeMove (car list-index) (cadr list-index) "X" matriz-juego))
          (send (vector-ref (vector-ref vect (cadr list-index)) (car list-index)) enable #f))
         (else
+         (mensaje "El jugador O es el ganador" "O")
          (printf "YA HAY UN GANADOR"))))
 
 (define (plot-aux matriz vector)
   (cond ((equal? (miembro matriz 1) #f))
   (else
    (plot-pc (myTurn matriz) vector) '())))
+
+;Funcion para imprimir mensaje de ganador
+;Mensaje en pantalla
+
+(define (mensaje texto who)
+   (cond ((equal? (win? matriz-juego who) #t)
+          (define msg1 (new message% [parent frame]
+                            [label texto]
+                            [font (make-object font% 50 'default 'normal 'bold)]))
+          (send frame show #t))
+         (else #f)))
 
 ;Funcion para determinar si un elemento pertenece a una matriz
 (define (miembro matriz ele)
