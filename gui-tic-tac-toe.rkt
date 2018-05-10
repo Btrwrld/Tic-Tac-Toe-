@@ -26,10 +26,8 @@
         (set! matriz-juego (makeMove index2 index1 "O" matriz-juego))
         (plot-aux matriz-juego vec-boton)
         (mensaje "El jugador X es el ganador" "X"))
-        
         (else
-         (mensaje "El jugador X es el ganador" "X")
-         (printf "YA HAY UN GANADOR"))))
+         (mensaje "El jugador X es el ganador" "X"))))
 
 ;Funcion utilizada para que se observe el movimiento de la computadora en el GUI
 (define (plot-pc list-index vect)
@@ -39,24 +37,62 @@
          (set! matriz-juego (makeMove (car list-index) (cadr list-index) "X" matriz-juego))
          (send (vector-ref (vector-ref vect (cadr list-index)) (car list-index)) enable #f))
         (else
-         (mensaje "El jugador O es el ganador" "O")
-         (printf "YA HAY UN GANADOR"))))
+         (mensaje "El jugador O es el ganador" "O"))))
+       
 
 (define (plot-aux matriz vector)
-  (cond ((equal? (miembro matriz 1) #f))
+  (cond ((equal? (miembro matriz 1) #f) (mensaje2 "El juego a quedado empatado"))
   (else
    (plot-pc (myTurn matriz) vector) '())))
 
 ;Funcion para imprimir mensaje de ganador
 ;Mensaje en pantalla
-
 (define (mensaje texto who)
    (cond ((equal? (win? matriz-juego who) #t)
           (define msg1 (new message% [parent frame]
                             [label texto]
                             [font (make-object font% 50 'default 'normal 'bold)]))
+           (new button%
+           [parent frame]
+           [label "Clear"]
+           [min-width 90]
+           [min-height 50]
+           [stretchable-width #f]	 
+           [stretchable-height #f]
+           [font (make-object font% 10 'default 'normal 'bold)]
+           [callback (lambda (button event) (on-button2-click button event))])
           (send frame show #t))
+
          (else #f)))
+
+;Funcion para imprimir mensaje de empate
+;Mensaje en pantalla
+(define (mensaje2 texto)
+          (define msg1 (new message% [parent frame]
+                            [label texto]
+                            [font (make-object font% 50 'default 'normal 'bold)]))
+           (new button%
+           [parent frame]
+           [label "Clear"]
+           [min-width 90]
+           [min-height 50]
+           [stretchable-width #f]	 
+           [stretchable-height #f]
+           [font (make-object font% 10 'default 'normal 'bold)]
+           [callback (lambda (button event) (on-button2-click button event))])
+           (send frame show #t))
+
+;Funcion para el boton de clear
+(define (on-button2-click button event)
+  (set! matriz-juego '())
+  (set! vec-boton '())
+  (set! vec-fila '())
+  (delete-children toplevel)
+  (delete-children frame)
+  (send toplevel show #f)
+  (send frame show #f))
+  
+  
 
 ;Funcion para determinar si un elemento pertenece a una matriz
 (define (miembro matriz ele)
@@ -113,6 +149,15 @@
   (cond ((zero? n) n)
         (else
       (+ (modulo n 10) (* 2 (bin-dec (quotient n 10)))))))
+
+;Funcion para borrar del gui los botones
+(define (delete-children object (id #f))
+  (send object change-children (λ (x)
+                  (if id
+                      (filter (λ (widget)
+                         (not (eq? (send widget ___get-guiml-name) id)))
+                          x)
+                      '()))))
 
 ;Funciones para cambiar de color el label del boton
 (define text-size-dc
