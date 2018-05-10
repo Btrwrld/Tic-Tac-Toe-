@@ -290,7 +290,7 @@
    matrix: Matriz de juego.
    player: juagor a evaluar
 
-   Ej: (winLeftDiagonal (list (list 1 1 "X") (list 1 "X" 1) (list 1 1 1)) "X")
+   Ej: (winDiagonal (list (list 1 1 "X") (list 1 "X" 1) (list 1 1 1)) "X")
 |#
 (define (winDiagonal matrix player toWin)
   (cond ((equal? (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix)) toWin)
@@ -483,6 +483,9 @@
   (cond ((or (null? matrix) (null? (car matrix)))
         0)
 
+        ((and (not (equal? (caar matrix) 1)) (not (equal? (caar matrix) player)))
+        11)
+
        ((and (equal? (caar matrix) player) (not(null? (cdar matrix))) (null? (cdr matrix)) )
         0)
        
@@ -494,9 +497,6 @@
 
        ((equal? (caar matrix) 1)
         (+ 1 (toWinDiagonalAux (cdr(remove_column matrix)) player)))
-
-       ((not (equal? (caar matrix) 1))
-        11)
        
        (else
         0)
