@@ -167,14 +167,11 @@
          ((equal? (bestSolution matrix player) "columns")
          (winColumn matrix player toWin))
 
-          ((equal? (bestSolution matrix player) "right_diagonal")
-         (winRightDiagonal matrix player toWin 0 0))
-         
-         ((equal? (bestSolution matrix player) "left_diagonal")
-         (winLeftDiagonal matrix player toWin 0 0))
+          ((equal? (bestSolution matrix player) "diagonal")
+         (winDiagonal matrix player toWin))
 
          ((equal? (bestSolution matrix player) "tie")
-         (freePick matrix))
+         (freePick matrix 0))
       ) 
   )
 
@@ -279,16 +276,36 @@
 
    matrix: Matriz de juego.
    player: juagor a evaluar
-   x : Posicion inicial en x
-   y : Posicion inicial en y
 
-   Ej: (winLeftDiagonal (list (list 1 1 "X") (list 1 "X" 1) (list 1 1 1)) "X" 0 0)
+   Ej: (winLeftDiagonal (list (list 1 1 "X") (list 1 "X" 1) (list 1 1 1)) "X")
 |#
-(define (winLeftDiagonal matrix player toWin x y)
-  (list (car (winRightDiagonal (invert matrix) player toWin x y)) (- (- (matY matrix) 1) (cadr (winRightDiagonal (invert matrix) player toWin x y))))
+(define (winLeftDiagonal matrix player toWin)
+  (list (car (winRightDiagonal (invert matrix) player toWin 0 0)) (- (- (matY matrix) 1) (cadr (winRightDiagonal (invert matrix) player toWin 0 0))))
   )
 
 
+
+#| Obtiene la posición para ganar cualquier diagonal
+
+   matrix: Matriz de juego.
+   player: juagor a evaluar
+
+   Ej: (winLeftDiagonal (list (list 1 1 "X") (list 1 "X" 1) (list 1 1 1)) "X")
+|#
+(define (winDiagonal matrix player toWin)
+  (cond ((equal? (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix)) toWin)
+         (winRightDiagonal matrix player toWin 0 0))
+
+        ((equal? (toWinRightDiagonal (transpose matrix) player (minMat (transpose matrix)) (minMat (transpose matrix))) toWin)
+         (list (cadr (winRightDiagonal (transpose matrix) player toWin 0 0)) (car (winRightDiagonal (transpose matrix) player toWin 0 0)) ))
+
+        ((equal? (toWinLeftDiagonal matrix player) toWin)
+         (winLeftDiagonal matrix player toWin))
+
+         ((equal? (toWinLeftDiagonal (transpose matrix) player) toWin)
+         (list (cadr (winLeftDiagonal (transpose matrix) player toWin)) (car (winLeftDiagonal (transpose matrix) player toWin)) ))
+    )
+  )
 
 
 #| Retorna el mínimo número de movimientos para ganar
@@ -305,13 +322,10 @@
 
          ((equal? (bestSolution matrix player) "columns")
          (toWinColumn matrix player (matY matrix)))
-
-          ((equal? (bestSolution matrix player) "right_diagonal")
-         (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix)))
-         
-         ((equal? (bestSolution matrix player) "left_diagonal")
-         (toWinLeftDiagonal matrix player))
-      ) 
+      
+         ((equal? (bestSolution matrix player) "diagonal")
+         (toWinDiagonal matrix player))
+      )
   )
 
 #| Elige al mejor candidato para la solucion, puede ser una fila, columna o diagonal
@@ -323,28 +337,19 @@
 |#
 (define (bestSolution matrix player)
   (cond ((and (<= (toWinRow matrix player (matX matrix)) (toWinColumn matrix player (matY matrix)))
-              (<= (toWinRow matrix player (matX matrix)) (toWinLeftDiagonal matrix player))
-              (<= (toWinRow matrix player (matX matrix)) (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix)))
+              (<= (toWinRow matrix player (matX matrix)) (toWinDiagonal matrix player))     
               (viableRows? matrix player))
          "rows")
 
          ((and (<= (toWinColumn matrix player (matY matrix)) (toWinRow matrix player (matX matrix)))
-               (<= (toWinColumn matrix player (matY matrix)) (toWinLeftDiagonal matrix player))
-               (<= (toWinColumn matrix player (matY matrix)) (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix)))
+               (<= (toWinColumn matrix player (matY matrix)) (toWinDiagonal matrix player))
                (viableColumns? matrix player))
          "columns")
 
-          ((and (<= (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix)) (toWinRow matrix player (matX matrix)))
-                (<= (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix)) (toWinColumn matrix player (matY matrix)))
-                (<= (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix)) (toWinLeftDiagonal matrix player))
-                (viableRDiagonal? matrix player))
-         "right_diagonal")
-         
-         ((and (<= (toWinLeftDiagonal matrix player) (toWinRow matrix player (matX matrix)))
-               (<= (toWinLeftDiagonal matrix player) (toWinColumn matrix player (matY matrix)))
-               (<= (toWinLeftDiagonal matrix player) (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix)))
-               (viableLDiagonal? matrix player))
-          "left_diagonal")
+          ((and (<= (toWinDiagonal matrix player) (toWinRow matrix player (matX matrix)))
+                (<= (toWinDiagonal matrix player) (toWinColumn matrix player (matY matrix)))
+                (viableDiagonal? matrix player (minMat matrix)))
+         "diagonal") 
 
         (else
          "tie")
@@ -380,12 +385,16 @@
    matrix: La matriz del juego
    player El jugador
 |#
-(define (viableRDiagonal? matrix player)
-  (cond ((null? matrix)
+(define (viableDiagonal? matrix player lim)
+  (or (viableRDiagonal? matrix player (minMat matrix)) (viableRDiagonal? (transpose matrix) player (minMat (transpose matrix)))
+        (viableLDiagonal? matrix player) (viableLDiagonal? (transpose matrix) player))
+  )
+(define (viableRDiagonal? matrix player lim )
+  (cond ((or (null? matrix) (> lim (minMat matrix)))
          #f)
         
-        ((<= 11 (toWinDiagonalAux matrix player))
-         (viableRDiagonal? (cdr matrix) player))
+        ((and (<= 11 (toWinDiagonalAux matrix player)) (<= lim (minMat matrix)))
+         (viableRDiagonal? (cdr matrix) player lim))
 
         (else
          #t)
@@ -398,7 +407,7 @@
    player El jugador
 |#
 (define (viableLDiagonal? matrix player)
-  (viableRDiagonal? (invert matrix) player)
+  (viableRDiagonal? (invert matrix) player (minMat (invert matrix)))
   )
 
 
@@ -530,6 +539,36 @@
 (define (toWinLeftDiagonal matrix player)
   (toWinRightDiagonal (invert matrix) player (minMat matrix) (minMat matrix))
   )
+
+
+#| Obtiene el menor numero de movimientos necesarios para ganar cualquier diagonal 
+   Funcion de viabilidad
+
+   matrix: La matriz del juego
+   player: El elemento a comparar
+   num: numero minimo de movimientos para gana la diagonal
+
+|#
+(define (toWinDiagonal matrix player)
+  (min (toWinRightDiagonal matrix player (minMat matrix) (minMat matrix)) (toWinRightDiagonal (transpose matrix) player (minMat matrix) (minMat matrix))
+        (toWinLeftDiagonal matrix player) (toWinLeftDiagonal (transpose matrix) player))
+  )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #| Remueve la primera columna de una matriz dada
