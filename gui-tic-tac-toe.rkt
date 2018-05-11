@@ -35,7 +35,8 @@
          (send (vector-ref (vector-ref vect (cadr list-index)) (car list-index)) set-label "X")
          (send (vector-ref (vector-ref vect (cadr list-index)) (car list-index)) set-color "red")
          (set! matriz-juego (makeMove (car list-index) (cadr list-index) "X" matriz-juego))
-         (send (vector-ref (vector-ref vect (cadr list-index)) (car list-index)) enable #f))
+         (send (vector-ref (vector-ref vect (cadr list-index)) (car list-index)) enable #f)
+         (plot-aux2 matriz-juego))
         (else
          (mensaje "El jugador O es el ganador" "O"))))
        
@@ -44,6 +45,10 @@
   (cond ((equal? (miembro matriz 1) #f) (mensaje2 "El juego a quedado empatado"))
   (else
    (plot-pc (myTurn matriz) vector) '())))
+
+(define (plot-aux2 matriz)
+  (cond ((equal? (miembro matriz 1) #f) (mensaje2 "El juego a quedado empatado"))
+  (else #f)))
 
 ;Funcion para imprimir mensaje de ganador
 ;Mensaje en pantalla
